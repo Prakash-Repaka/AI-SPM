@@ -1,0 +1,70 @@
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import ForceGraph2D from 'react-force-graph-2d';
+
+const GraphExplorer = () => {
+    const [graphData, setGraphData] = useState({ nodes: [], links: [] });
+    const [paths, setPaths] = useState([]);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const gRes = await axios.get('http://localhost:3000/api/graph');
+                if (gRes.data.data) setGraphData(gRes.data.data);
+
+                const pRes = await axios.get('http://localhost:3000/api/risks/paths');
+                if (pRes.data.data) setPaths(pRes.data.data);
+            } catch (err) {
+                console.error(err);
+            }
+        };
+        fetchData();
+    }, []);
+
+    return (
+        <div className="flex h-full">
+            <div className="flex-1 relative bg-slate-900 overflow-hidden">
+                <div className="absolute top-4 left-4 z-10 bg-slate-800 p-4 rounded-lg shadow-lg text-white">
+                    <h3 className="font-bold">Security Graph</h3>
+                    <p className="text-xs text-slate-400">Visualizing Asset Relationships</p>
+                </div>
+                <ForceGraph2D
+                    graphData={graphData}
+                    nodeLabel="label"
+                    nodeColor={node => node.group === 0 ? '#ef4444' : node.group === 1 ? '#3b82f6' : '#22c55e'}
+                    linkColor={() => '#475569'}
+                    backgroundColor="#0f172a"
+                />
+            </div>
+            <div className="w-80 bg-white border-l border-gray-200 p-6 overflow-y-auto">
+                <h3 className="font-bold text-lg mb-4">Attack Paths</h3>
+                {paths.map(path => (
+                    <div key={path.id} className="mb-6 p-4 bg-red-50 border border-red-100 rounded-lg">
+                        <div className="flex justify-between items-start mb-2">
+                            <h4 className="font-semibold text-red-900 text-sm">{path.title}</h4>
+                            <span className="bg-red-200 text-red-800 text-xs px-2 py-0.5 rounded font-bold">{path.severity}</span>
+                        </div>
+                        <div className="space-y-3 relative">
+                            {/* Vertical Line */}
+                            <div className="absolute left-2.5 top-2 bottom-2 w-0.5 bg-red-200"></div>
+
+                            {path.steps.map((step, idx) => (
+                                <div key={step.id} className="relative flex items-center space-x-3 z-10">
+                                    <div className="w-5 h-5 rounded-full bg-red-100 border-2 border-red-400 flex items-center justify-center text-[10px] font-bold text-red-800">
+                                        {idx + 1}
+                                    </div>
+                                    <div className="text-xs">
+                                        <p className="font-medium text-gray-900">{step.name}</p>
+                                        <p className="text-gray-500">{step.type}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+};
+
+export default GraphExplorer;
