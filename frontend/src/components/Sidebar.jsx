@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, Database, Share2, ShieldAlert, FileText } from 'lucide-react';
+import { LayoutDashboard, Database, Share2, ShieldAlert, FileText, Zap, Eye } from 'lucide-react';
 
 const Sidebar = ({ activeTab, setActiveTab }) => {
     const menuItems = [
@@ -7,6 +7,8 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
         { id: 'inventory', label: 'Asset Inventory', icon: Database },
         { id: 'graph', label: 'Security Graph', icon: Share2 },
         { id: 'risks', label: 'Findings & Risks', icon: ShieldAlert },
+        { id: 'redteam', label: 'AI Red Teaming', icon: Zap },
+        { id: 'shadow', label: 'Shadow AI Discovery', icon: Eye },
         { id: 'reports', label: 'Reports', icon: FileText },
     ];
 
@@ -28,8 +30,8 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
                             key={item.id}
                             onClick={() => setActiveTab(item.id)}
                             className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 ${isActive
-                                    ? 'bg-blue-600 shadow-lg shadow-blue-900/50 text-white'
-                                    : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                                ? 'bg-blue-600 shadow-lg shadow-blue-900/50 text-white'
+                                : 'text-slate-400 hover:bg-slate-800 hover:text-white'
                                 }`}
                         >
                             <Icon size={20} />

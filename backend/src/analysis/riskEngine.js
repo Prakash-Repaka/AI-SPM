@@ -97,6 +97,14 @@ class RiskEngine {
             asset.findingsCount = findings.filter(f => f.assetId === asset.id).length;
         }
 
+        // --- FINANCIAL RISK ESTIMATION (V2.0) ---
+        findings = findings.map(f => ({
+            ...f,
+            projectedLoss: f.severity === 'CRITICAL' ? 500000 :
+                f.severity === 'HIGH' ? 100000 :
+                    f.severity === 'MEDIUM' ? 25000 : 5000
+        }));
+
         // --- NEW: STRIDE ANALYSIS ---
         // Pass all findings through the ThreatEngine
         const threatAnalysis = threatEngine.analyze(findings);
@@ -115,7 +123,8 @@ class RiskEngine {
             totalRisks: findings.length,
             criticalCount: findings.filter(f => f.severity === 'CRITICAL').length,
             highCount: findings.filter(f => f.severity === 'HIGH').length,
-            averageRiskScore: assets.reduce((acc, curr) => acc + (curr.riskScore || 0), 0) / (assets.length || 1)
+            averageRiskScore: assets.reduce((acc, curr) => acc + (curr.riskScore || 0), 0) / (assets.length || 1),
+            totalProjectedLoss: findings.reduce((acc, f) => acc + (f.projectedLoss || 0), 0)
         };
     }
 }

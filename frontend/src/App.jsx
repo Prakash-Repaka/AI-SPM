@@ -5,6 +5,8 @@ import AssetInventory from './components/AssetInventory';
 import FindingsPage from './components/FindingsPage';
 import GraphExplorer from './components/GraphExplorer';
 import ReportsPage from './components/ReportsPage';
+import RedTeamPage from './components/RedTeamPage';
+import ShadowAIPage from './components/ShadowAIPage';
 
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -18,6 +20,8 @@ function App() {
         {activeTab === 'risks' && <FindingsPage />}
         {activeTab === 'graph' && <GraphExplorer />}
         {activeTab === 'reports' && <ReportsPage />}
+        {activeTab === 'redteam' && <RedTeamPage />}
+        {activeTab === 'shadow' && <ShadowAIPage />}
       </div>
     </div>
   );

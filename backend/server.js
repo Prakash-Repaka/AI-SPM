@@ -115,6 +115,20 @@ app.get('/api/reports', async (req, res) => {
     }
 });
 
+// Remediation Routes (V2.0)
+const remediationEngine = require('./src/analysis/remediationEngine');
+app.post('/api/remediate', (req, res) => {
+    try {
+        const { finding } = req.body;
+        if (!finding) return res.status(400).json({ status: 'error', message: 'Finding data required' });
+
+        const fix = remediationEngine.generateFix(finding);
+        res.json({ status: 'success', data: fix });
+    } catch (error) {
+        res.status(500).json({ status: 'error', message: error.message });
+    }
+});
+
 // Start Server
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);

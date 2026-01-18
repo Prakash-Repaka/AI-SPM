@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Shield, Server, AlertTriangle, Activity, Play } from 'lucide-react';
+import { Shield, Server, AlertTriangle, Activity, Play, CircleDollarSign } from 'lucide-react';
 import axios from 'axios';
 
 const Dashboard = ({ setActiveTab }) => {
@@ -8,10 +8,11 @@ const Dashboard = ({ setActiveTab }) => {
         risks: 0,
         coverage: 100,
         lastScan: 'Never',
+        projectedLoss: 0,
         threats: null
     });
     const [scanning, setScanning] = useState(false);
-    const [scanLogs, setScanLogs] = useState([]); // Array of log strings
+    const [scanLogs, setScanLogs] = useState([]);
     const [backendStatus, setBackendStatus] = useState('Checking...');
     const [showConfig, setShowConfig] = useState(false);
     const [awsConfig, setAwsConfig] = useState({
@@ -42,7 +43,6 @@ const Dashboard = ({ setActiveTab }) => {
         setScanLogs([]); // Clear logs
         setShowConfig(false);
 
-        // Simulate startup logs
         addLog("Initializing AegisAI Discovery Engine...");
         addLog(`Target Region: ${awsConfig.region || 'us-east-1'}`);
         addLog("Authenticating with AWS STS...");
@@ -53,18 +53,16 @@ const Dashboard = ({ setActiveTab }) => {
                 config: awsConfig
             });
 
-            // Simulate progression logs
             addLog("✓ Authentication Successful.");
             addLog("Scanning S3 Buckets...");
             addLog(`Found ${res.data.data?.S3Scanner?.length || 0} S3 Buckets.`);
             addLog("Scanning SageMaker Endpoints...");
             addLog(`Found ${res.data.data?.SageMakerScanner?.length || 0} ML Endpoints.`);
             addLog("Analyzing IAM Roles & Policies...");
-            addLog("Running Risk Analysis Engine...");
+            addLog("Running Risk Analysis Engine (Financial Impact Estimation)...");
             addLog("Evaluating NIST AI RMF Compliance...");
             addLog("✓ Scan Complete. Updating Dashboard.");
 
-            // Stats update
             const totalAssets = (res.data.data?.SageMakerScanner?.length || 0) +
                 (res.data.data?.S3Scanner?.length || 0) +
                 (res.data.data?.IAMScanner?.length || 0);
@@ -74,7 +72,8 @@ const Dashboard = ({ setActiveTab }) => {
                 assets: totalAssets,
                 risks: res.data.stats?.criticalCount || 0,
                 lastScan: new Date().toLocaleTimeString(),
-                threats: res.data.threats // Capture STRIDE matrix
+                projectedLoss: res.data.stats?.totalProjectedLoss || 0,
+                threats: res.data.threats
             }));
         } catch (err) {
             console.error(err);
@@ -185,7 +184,7 @@ const Dashboard = ({ setActiveTab }) => {
             )}
 
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
                 <StatCard
                     title="Total AI Assets"
                     value={stats.assets}
@@ -200,6 +199,14 @@ const Dashboard = ({ setActiveTab }) => {
                     icon={AlertTriangle}
                     color="text-red-600"
                     subtext="Requires attention"
+                    onClick={() => setActiveTab('risks')}
+                />
+                <StatCard
+                    title="Projected Loss"
+                    value={`$${(stats.projectedLoss || 0).toLocaleString()}`}
+                    icon={CircleDollarSign}
+                    color="text-orange-600"
+                    subtext="Financial Risk Exposure"
                     onClick={() => setActiveTab('risks')}
                 />
                 <StatCard
@@ -249,7 +256,6 @@ const Dashboard = ({ setActiveTab }) => {
             </div>
 
             {/* Terminal Log Output */}
-
             <div className="bg-slate-900 rounded-xl shadow-lg border border-slate-700 p-6 font-mono text-sm overflow-hidden">
                 <div className="flex justify-between items-center mb-4 border-b border-slate-700 pb-2">
                     <h3 className="text-slate-100 font-bold flex items-center">
