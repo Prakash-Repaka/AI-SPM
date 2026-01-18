@@ -27,6 +27,22 @@ const RULES = [
         riskScore: 80,
         check: (asset) => asset.type === 'IAMRole' && asset.isOverPrivileged,
         remediation: 'Apply Least Privilege Principle. Remove AdministratorAccess and scope down permissions.'
+    },
+    {
+        id: 'S3-002',
+        description: 'S3 Bucket allows Public Write (Data Poisoning Risk)',
+        severity: 'CRITICAL',
+        riskScore: 95,
+        check: (asset) => asset.type === 'S3Bucket' && asset.isPublicWrite,
+        remediation: 'Disable public write access immediately via Bucket Policy or ACLs.'
+    },
+    {
+        id: 'SM-004',
+        description: 'SageMaker Model uses Vulnerable Container Image (CVE-2024-XYZ)',
+        severity: 'HIGH',
+        riskScore: 85,
+        check: (asset) => asset.type === 'SageMakerEndpoint' && asset.hasVulnerableImage,
+        remediation: 'Update the Inference Image to the latest patched version from ECR.'
     }
 ];
 

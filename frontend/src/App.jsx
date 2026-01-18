@@ -13,7 +13,7 @@ function App() {
     <div className="flex h-screen bg-gray-50">
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
       <div className="flex-1 overflow-auto">
-        {activeTab === 'dashboard' && <Dashboard />}
+        {activeTab === 'dashboard' && <Dashboard setActiveTab={setActiveTab} />}
         {activeTab === 'inventory' && <AssetInventory />}
         {activeTab === 'risks' && <FindingsPage />}
         {activeTab === 'graph' && <GraphExplorer />}

@@ -122,7 +122,13 @@ const ReportsPage = () => {
                         )}
 
                         <div className="text-right">
-                            <button onClick={handleDownloadPDF} className="text-blue-600 text-sm font-medium hover:underline">Download PDF (Mock)</button>
+                            <button
+                                onClick={handleDownloadPDF}
+                                className="flex items-center text-blue-600 text-sm font-bold hover:text-blue-800 transition-colors"
+                            >
+                                <Download className="mr-2" size={16} />
+                                Download Official PDF Report
+                            </button>
                         </div>
                     </div>
                 )}

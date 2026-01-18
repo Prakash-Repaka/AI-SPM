@@ -5,6 +5,8 @@ class ThreatEngine {
             'SM-002': 'Information Disclosure', // No VPC -> Traffic interception
             'SM-003': 'Information Disclosure', // Secrets in Env -> Credential Leak
             'S3-001': 'Information Disclosure', // Unencrypted Data -> Data Leak
+            'S3-002': 'Tampering', // Public Write -> Data Poisoning
+            'SM-004': 'Spoofing', // Vulnerable Image -> Supply Chain / Impersonation
             'IAM-001': 'Elevation of Privilege', // Overprivileged Role -> Escalate rights
             'BEDROCK-001': 'Repudiation', // No Logs -> Cannot prove who did what
             // Graph-based

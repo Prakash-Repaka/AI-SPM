@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Shield, Server, AlertTriangle, Activity, Play } from 'lucide-react';
 import axios from 'axios';
 
-const Dashboard = () => {
+const Dashboard = ({ setActiveTab }) => {
     const [stats, setStats] = useState({
         assets: 0,
         risks: 0,
         coverage: 100,
-        lastScan: 'Never'
+        lastScan: 'Never',
+        threats: null
     });
     const [scanning, setScanning] = useState(false);
     const [scanLogs, setScanLogs] = useState([]); // Array of log strings
@@ -52,9 +53,7 @@ const Dashboard = () => {
                 config: awsConfig
             });
 
-            // Simulate progression logs (Post-scan for effect, or could be parallel if async)
-            // Since backend waits, we do this after res or fake it with timers before await if we want real-time feel. 
-            // For simple demo, we can dump them fast now.
+            // Simulate progression logs
             addLog("✓ Authentication Successful.");
             addLog("Scanning S3 Buckets...");
             addLog(`Found ${res.data.data?.S3Scanner?.length || 0} S3 Buckets.`);
@@ -64,8 +63,6 @@ const Dashboard = () => {
             addLog("Running Risk Analysis Engine...");
             addLog("Evaluating NIST AI RMF Compliance...");
             addLog("✓ Scan Complete. Updating Dashboard.");
-
-            console.log(res.data);
 
             // Stats update
             const totalAssets = (res.data.data?.SageMakerScanner?.length || 0) +
@@ -92,8 +89,11 @@ const Dashboard = () => {
         setAwsConfig({ ...awsConfig, [e.target.name]: e.target.value });
     };
 
-    const StatCard = ({ title, value, icon: Icon, color, subtext }) => (
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
+    const StatCard = ({ title, value, icon: Icon, color, subtext, onClick }) => (
+        <div
+            onClick={onClick}
+            className={`bg-white p-6 rounded-xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow cursor-pointer hover:border-blue-200 transition-all active:scale-95`}
+        >
             <div className="flex justify-between items-start">
                 <div>
                     <p className="text-sm font-medium text-slate-500">{title}</p>
@@ -191,7 +191,8 @@ const Dashboard = () => {
                     value={stats.assets}
                     icon={Server}
                     color="text-blue-600"
-                    subtext="+0 new assets"
+                    subtext="+3 new assets"
+                    onClick={() => setActiveTab('inventory')}
                 />
                 <StatCard
                     title="Critical Risks"
@@ -199,6 +200,7 @@ const Dashboard = () => {
                     icon={AlertTriangle}
                     color="text-red-600"
                     subtext="Requires attention"
+                    onClick={() => setActiveTab('risks')}
                 />
                 <StatCard
                     title="Security Score"
@@ -206,6 +208,7 @@ const Dashboard = () => {
                     icon={Shield}
                     color="text-green-600"
                     subtext="Top 10%"
+                    onClick={() => setActiveTab('reports')}
                 />
                 <StatCard
                     title="Compliance"
@@ -213,6 +216,7 @@ const Dashboard = () => {
                     icon={Activity}
                     color="text-purple-600"
                     subtext="NIST AI RMF"
+                    onClick={() => setActiveTab('reports')}
                 />
             </div>
 

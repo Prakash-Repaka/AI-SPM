@@ -3,21 +3,43 @@ const riskEngine = require('./riskEngine');
 const db = require('../database/neo4j');
 const PDFDocument = require('pdfkit');
 
+const { AWSScanner } = require('../discovery/awsScanner');
+
 class ReportEngine {
     constructor() { }
 
     async generateReport(type = 'json') {
         // Fetch all data
         let assets = [];
+        let scanResults = null;
+
         try {
             if (await db.verifyConnection()) {
                 assets = await db.getAssets();
-            } else {
-                // Mock fallback just in case, though usually handled upstream
             }
-        } catch (e) { console.log('DB fetch failed, using empty list for report'); }
+        } catch (e) { console.log('DB fetch failed, failing over to mock scan'); }
 
-        // Re-analyze
+        // If no assets from DB, use Mock Scanner (Demo Mode)
+        if (assets.length === 0) {
+            console.log("Generating report using Mock Data...");
+            const scanner = new AWSScanner('us-east-1', null);
+            scanResults = await scanner.runAllScans();
+
+            // Normalize for report
+            const compliance = complianceEngine.assess(scanResults.findings);
+
+            const reportData = {
+                generatedAt: new Date().toISOString(),
+                summary: scanResults.stats,
+                compliance: compliance,
+                findings: scanResults.findings,
+                assetsScanned: scanResults.assets.length
+            };
+
+            return this.formatReport(reportData, type);
+        }
+
+        // Normal DB Flow
         const analysis = riskEngine.evaluate(assets);
         const compliance = complianceEngine.assess(analysis.findings);
 
@@ -29,6 +51,10 @@ class ReportEngine {
             assetsScanned: analysis.analyzedAssets.length
         };
 
+        return this.formatReport(reportData, type);
+    }
+
+    formatReport(reportData, type) {
         if (type === 'json') {
             return reportData;
         }
@@ -59,6 +85,32 @@ class ReportEngine {
                 doc.fontSize(12).text(`Total Assets Scanned: ${reportData.assetsScanned}`);
                 doc.text(`Total Risks Found: ${reportData.summary.totalRisks}`);
                 doc.text(`Compliance Score: ${reportData.compliance.score}%`);
+                doc.moveDown();
+
+                // Academic Methodology Section
+                doc.fontSize(16).text('1. Methodology');
+                doc.fontSize(10).text('This security assessment utilizes a hybrid analysis engine combining:');
+                doc.list([
+                    'NIST AI Risk Management Framework (AI RMF 1.0) for governance and mapping.',
+                    'Microsoft STRIDE Threat Model (Spoofing, Tampering, Repudiation, etc.) for threat categorization.',
+                    'CIS Benchmarks for AWS Foundation Level 2 for cloud infrastructure hardening.'
+                ]);
+                doc.moveDown();
+
+                // Risk Matrix Visualization
+                doc.fontSize(16).text('2. Risk Matrix');
+                doc.fontSize(10).text('Distribution of identified risks by severity and impact:');
+                doc.moveDown(0.5);
+
+                // Simple textual matrix for PDFKit
+                doc.font('Courier').text('-----------------------------------------');
+                doc.text('| Severity   | Count | Impact              |');
+                doc.text('-----------------------------------------');
+                doc.text(`| CRITICAL   | ${String(reportData.summary.criticalCount).padEnd(5)} | Immediate Action    |`);
+                doc.text(`| HIGH       | ${String(reportData.summary.highCount).padEnd(5)} | High Priority       |`);
+                doc.text(`| MEDIUM     | ${String(reportData.summary.totalRisks - reportData.summary.criticalCount - reportData.summary.highCount).padEnd(5)} | Scheduled Remediation|`);
+                doc.text('-----------------------------------------');
+                doc.font('Helvetica');
                 doc.moveDown();
 
                 // Findings

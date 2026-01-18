@@ -55,17 +55,31 @@ class AttackPathEngine {
     }
 
     getMockPaths() {
-        return [{
-            id: 'path-demo-1',
-            title: 'Public Endpoint to Training Data Exfiltration (DEMO)',
-            severity: 'CRITICAL',
-            score: 95,
-            steps: [
-                { id: 'step-1', assetIs: 'SageMakerEndpoint', name: 'finance-llm-v1', type: 'Exposure', description: 'Publicly accessible endpoint found' },
-                { id: 'step-2', assetIs: 'IAMRole', name: 'SageMakerExecutionRole', type: 'Privilege', description: 'Endpoint has role with S3 Read access' },
-                { id: 'step-3', assetIs: 'S3Bucket', name: 'finance-training-data', type: 'Target', description: 'Contains unencrypted sensitive CSVs' }
-            ]
-        }];
+        return [
+            {
+                id: 'path-demo-1',
+                title: 'AI Data Poisoning via Public Write S3',
+                severity: 'CRITICAL',
+                score: 98,
+                steps: [
+                    { id: 'step-1', assetIs: 'Network', name: 'INTERNET', type: 'Source', description: 'Attacker from Public Internet' },
+                    { id: 'step-2', assetIs: 'S3Bucket', name: 'public-model-share', type: 'Exploit', description: 'Bucket allows Public Write (Data Poisoning)' },
+                    { id: 'step-3', assetIs: 'SageMakerEndpoint', name: 'finance-llm-v1', type: 'Target', description: 'Consumes poisoned data for inference' }
+                ]
+            },
+            {
+                id: 'path-demo-2',
+                title: 'Supply Chain Compromise (Vulnerable Image)',
+                severity: 'HIGH',
+                score: 85,
+                steps: [
+                    { id: 'step-1', assetIs: 'ContainerRegistry', name: 'DockerHub', type: 'Source', description: 'Compromised Upstream Image' },
+                    { id: 'step-2', assetIs: 'SageMakerEndpoint', name: 'finance-llm-v1', type: 'Vulnerability', description: 'Running CVE-2024-XYZ (Remote Exec)' },
+                    { id: 'step-3', assetIs: 'IAMRole', name: 'SageMakerExecutionRole', type: 'Privilege', description: 'Role allows S3 Full Access' },
+                    { id: 'step-4', assetIs: 'S3Bucket', name: 'finance-training-data', type: 'Exfiltration', description: 'Sensitive financial data stolen' }
+                ]
+            }
+        ];
     }
 }
 

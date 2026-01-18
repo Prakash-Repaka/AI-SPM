@@ -16,6 +16,11 @@ class AWSScanner {
             new S3Scanner(region, credentials),
             new IAMScanner(region, credentials)
         ];
+        // Enforce names for mock generation reliability
+        this.scanners[0].name = 'SageMakerScanner';
+        this.scanners[1].name = 'BedrockScanner';
+        this.scanners[2].name = 'S3Scanner';
+        this.scanners[3].name = 'IAMScanner';
     }
 
     async runAllScans() {
@@ -26,27 +31,28 @@ class AWSScanner {
 
         for (const scanner of this.scanners) {
             const scannerName = scanner.name || scanner.constructor.name;
-            console.log(`Running scanner: ${scannerName}`);
-            try {
-                let assets = await scanner.scan();
 
-                // MOCK FALLBACK for DEMO purposes if no assets found
-                if (!assets || assets.length === 0) {
-                    console.log(`⚠️ No assets found for ${scannerName}. generating Mock Data.`);
-                    assets = this.generateMockAssets(scannerName);
-                    console.log(`[DEBUG] Generated ${assets.length} mock assets for ${scannerName}`);
+            // STRICT SEPARATION: Real vs Demo
+            if (this.credentials) {
+                // --- REAL MODE ---
+                console.log(`Running REAL scan for: ${scannerName}`);
+                try {
+                    const assets = await scanner.scan();
+                    results[scannerName] = assets || [];
+                    allAssets.push(...(assets || []));
+                    console.log(`✅ ${scannerName}: Found ${assets?.length || 0} assets (Real)`);
+                } catch (error) {
+                    console.error(`❌ ${scannerName} Failed (Real Mode):`, error.message);
+                    // In Real Mode, we DO NOT fallback to mock data. We report zero/error.
+                    results[scannerName] = [];
                 }
-
+            } else {
+                // --- DEMO MODE ---
+                console.log(`Running DEMO (Mock) scan for: ${scannerName}`);
+                const assets = this.generateMockAssets(scannerName);
                 results[scannerName] = assets;
                 allAssets.push(...assets);
-                console.log(`✅ ${scannerName}: Found ${assets.length} assets`);
-            } catch (error) {
-                console.error(`❌ ${scannerName} Failed:`, error.message);
-                // Fallback to mock on error
-                console.log(`[DEBUG] Error caught, generating mocks for ${scannerName}`);
-                const mockAssets = this.generateMockAssets(scannerName);
-                results[scannerName] = mockAssets;
-                allAssets.push(...mockAssets);
+                console.log(`✅ ${scannerName}: Generated ${assets.length} mock assets`);
             }
         }
 
@@ -89,6 +95,7 @@ class AWSScanner {
                     modelName: 'llama-2-7b-finance-tuned',
                     instanceType: 'ml.g5.2xlarge',
                     isPublic: true,
+                    hasVulnerableImage: true, // NEW: Supply Chain Risk
                     tags: { Environment: 'Production', Owner: 'DataScienceTeam' }
                 },
                 {
@@ -136,15 +143,16 @@ class AWSScanner {
                     tags: { Environment: 'Production', Type: 'TrainingData' }
                 },
                 {
-                    id: 'arn:aws:s3:::model-artifacts-v2',
-                    arn: 'arn:aws:s3:::model-artifacts-v2',
-                    name: 'model-artifacts-v2',
+                    id: 'arn:aws:s3:::public-model-share', // NEW: Poisoning Risk
+                    arn: 'arn:aws:s3:::public-model-share',
+                    name: 'public-model-share',
                     type: 'S3Bucket',
                     region: this.region,
                     accountId: '123456789012',
                     status: 'Active',
                     isEncrypted: true,
                     isPublic: true,
+                    isPublicWrite: true, // CRITICAL: Allows poisoning
                     tags: { Environment: 'Staging' }
                 },
                 {
