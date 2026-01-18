@@ -9,18 +9,55 @@ class AttackPathEngine {
     async findAttackPaths() {
         const paths = [];
 
-        // In a real scenario, we query Neo4j for paths
-        // MATCH p=(start:AIAsset {isPublic: true})-[:HAS_ACCESS_TO|:CAN_INVOKE*1..3]->(end:AIAsset {containsSensitiveData: true})
-        // RETURN p
+        // Check if DB is online
+        const isConnected = await db.verifyConnection();
+        if (!isConnected) {
+            // Fallback to mock if DB down (for development/demo reliability)
+            console.warn("⚠️ Graph DB unavailable, returning mock attack paths.");
+            return this.getMockPaths();
+        }
 
-        // Mock Implementation for Logic
-        // We know from our mock data:
-        // finance-llm-v1 (Public) -> [Potential Access] -> Internal Training Data
+        try {
+            // Pattern: Internet -> Asset -> Role -> (Potentially Sensitive Resource)
+            // Note: In real life, we'd check if Role has permissions on Sensitive Resource.
+            // Here we look for: (Internet)-[:CAN_REACH]->(PublicAsset)-[:USES_ROLE]->(Role)-[:HAS_ACCESS]->(SensitiveAsset)
+            // But since we don't fully parse IAM policies to graph yet, we will imply risk:
+            // Public Asset USES OverPrivileged Role.
 
-        // Let's create a mocked path structure
-        const attackPath = {
-            id: 'path-1',
-            title: 'Public Endpoint to Training Data Exfiltration',
+            const result = await db.executeQuery(`
+                MATCH path = (internet:Network {id: 'INTERNET'})-[:CAN_REACH]->(entryPoint:AIAsset)-[:USES_ROLE]->(role:IAMRole)
+                WHERE role.isOverPrivileged = true OR role.policies_str CONTAINS 'Admin'
+                RETURN entryPoint, role, path
+                LIMIT 10
+            `);
+
+            result.records.forEach((record, index) => {
+                const entryPoint = record.get('entryPoint').properties;
+                const role = record.get('role').properties;
+
+                paths.push({
+                    id: `path-${index}`,
+                    title: `Public ${entryPoint.type} uses Over-Privileged Role`,
+                    severity: 'CRITICAL',
+                    score: 95,
+                    steps: [
+                        { id: `step-${index}-1`, assetIs: entryPoint.type, name: entryPoint.name, type: 'Exposure', description: `Publicly available ${entryPoint.type}` },
+                        { id: `step-${index}-2`, assetIs: 'IAMRole', name: role.name, type: 'Privilege', description: `Uses role ${role.name} with excessive permissions` }
+                    ]
+                });
+            });
+
+        } catch (error) {
+            console.error("Error calculating attack paths:", error);
+        }
+
+        return paths;
+    }
+
+    getMockPaths() {
+        return [{
+            id: 'path-demo-1',
+            title: 'Public Endpoint to Training Data Exfiltration (DEMO)',
             severity: 'CRITICAL',
             score: 95,
             steps: [
@@ -28,10 +65,7 @@ class AttackPathEngine {
                 { id: 'step-2', assetIs: 'IAMRole', name: 'SageMakerExecutionRole', type: 'Privilege', description: 'Endpoint has role with S3 Read access' },
                 { id: 'step-3', assetIs: 'S3Bucket', name: 'finance-training-data', type: 'Target', description: 'Contains unencrypted sensitive CSVs' }
             ]
-        };
-
-        paths.push(attackPath);
-        return paths;
+        }];
     }
 }
 

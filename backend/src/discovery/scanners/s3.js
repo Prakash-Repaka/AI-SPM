@@ -3,6 +3,7 @@ const { S3Client, ListBucketsCommand, GetBucketEncryptionCommand, GetBucketLocat
 class S3Scanner {
     constructor(region, credentials) {
         this.region = region;
+        this.name = 'S3Scanner';
         const config = { region };
         if (credentials) {
             config.credentials = {

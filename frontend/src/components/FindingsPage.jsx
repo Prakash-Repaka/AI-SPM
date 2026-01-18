@@ -6,21 +6,22 @@ const FindingsPage = () => {
     const [loading, setLoading] = useState(true);
     const [selectedRemediation, setSelectedRemediation] = useState(null);
 
+    const fetchFindings = async () => {
+        try {
+            const res = await axios.post('http://localhost:3000/api/scan');
+            if (res.data.data && res.data.data.findings) {
+                setFindings(res.data.data.findings);
+            }
+        } catch (err) {
+            console.error("Error fetching findings:", err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
         // In a real app we'd fetch findings from a dedicated endpoint
         // For now, we trigger a scan to get the fresh analysis
-        const fetchFindings = async () => {
-            try {
-                const res = await axios.post('http://localhost:3000/api/scan');
-                if (res.data.data && res.data.data.findings) {
-                    setFindings(res.data.data.findings);
-                }
-            } catch (err) {
-                console.error("Error fetching findings:", err);
-            } finally {
-                setLoading(false);
-            }
-        };
         fetchFindings();
     }, []);
 

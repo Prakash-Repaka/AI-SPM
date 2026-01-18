@@ -76,7 +76,8 @@ const Dashboard = () => {
                 ...prev,
                 assets: totalAssets,
                 risks: res.data.stats?.criticalCount || 0,
-                lastScan: new Date().toLocaleTimeString()
+                lastScan: new Date().toLocaleTimeString(),
+                threats: res.data.threats // Capture STRIDE matrix
             }));
         } catch (err) {
             console.error(err);
@@ -183,6 +184,7 @@ const Dashboard = () => {
                 </div>
             )}
 
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 <StatCard
                     title="Total AI Assets"
@@ -214,7 +216,36 @@ const Dashboard = () => {
                 />
             </div>
 
+            {/* STRIDE THREAT MATRIX WIDGET */}
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 mb-8">
+                <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center">
+                    <Shield className="w-5 h-5 mr-2 text-indigo-600" />
+                    Threat Landscape (STRIDE Model)
+                </h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                    {stats.threats && Object.values(stats.threats).some(val => val > 0) ? (
+                        Object.entries(stats.threats).map(([category, count]) => (
+                            <div key={category} className={`p-4 rounded-lg border ${count > 0 ? 'bg-red-50 border-red-100' : 'bg-slate-50 border-slate-100'}`}>
+                                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">{category}</p>
+                                <div className="flex items-end items-baseline">
+                                    <span className={`text-2xl font-bold ${count > 0 ? 'text-red-600' : 'text-slate-400'}`}>{count}</span>
+                                    <span className="text-xs text-slate-400 ml-1">threats</span>
+                                </div>
+                            </div>
+                        ))
+                    ) : stats.threats ? (
+                        <div className="col-span-full p-6 bg-green-50 border border-green-200 rounded-lg flex items-center justify-center">
+                            <Shield className="text-green-600 mr-2" size={24} />
+                            <p className="text-green-800 font-medium">No STRIDE model vulnerabilities have been detected.</p>
+                        </div>
+                    ) : (
+                        <p className="text-slate-400 text-sm col-span-full">Run a scan to see threat modeling results.</p>
+                    )}
+                </div>
+            </div>
+
             {/* Terminal Log Output */}
+
             <div className="bg-slate-900 rounded-xl shadow-lg border border-slate-700 p-6 font-mono text-sm overflow-hidden">
                 <div className="flex justify-between items-center mb-4 border-b border-slate-700 pb-2">
                     <h3 className="text-slate-100 font-bold flex items-center">

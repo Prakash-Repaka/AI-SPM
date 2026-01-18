@@ -68,18 +68,28 @@ app.get('/api/assets', async (req, res) => {
 
 // Graph Routes
 app.get('/api/graph', async (req, res) => {
-    const nodes = [
-        { id: 'finance-llm-v1', group: 1, label: 'SageMaker Endpoint' },
-        { id: 'SageMakerExecutionRole', group: 2, label: 'IAM Role' },
-        { id: 'finance-training-data', group: 3, label: 'S3 Bucket' },
-        { id: 'internet', group: 0, label: 'Internet' }
-    ];
-    const links = [
-        { source: 'internet', target: 'finance-llm-v1', label: 'EXPOSED_TO' },
-        { source: 'finance-llm-v1', target: 'SageMakerExecutionRole', label: 'ASSUMES' },
-        { source: 'SageMakerExecutionRole', target: 'finance-training-data', label: 'READS' }
-    ];
-    res.json({ status: 'success', data: { nodes, links } });
+    try {
+        if (await db.verifyConnection()) {
+            const data = await db.getGraphData();
+            res.json({ status: 'success', data });
+        } else {
+            // Mock Fallback if DB is down
+            const nodes = [
+                { id: 'finance-llm-v1', group: 1, label: 'SageMaker Endpoint' },
+                { id: 'SageMakerExecutionRole', group: 2, label: 'IAM Role' },
+                { id: 'finance-training-data', group: 3, label: 'S3 Bucket' },
+                { id: 'internet', group: 0, label: 'Internet' }
+            ];
+            const links = [
+                { source: 'internet', target: 'finance-llm-v1', label: 'EXPOSED_TO' },
+                { source: 'finance-llm-v1', target: 'SageMakerExecutionRole', label: 'ASSUMES' },
+                { source: 'SageMakerExecutionRole', target: 'finance-training-data', label: 'READS' }
+            ];
+            res.json({ status: 'success', data: { nodes, links } });
+        }
+    } catch (error) {
+        res.status(500).json({ status: 'error', message: error.message });
+    }
 });
 
 // Attack Paths Route

@@ -24,8 +24,15 @@ const ReportsPage = () => {
             // Request PDF type
             const res = await axios.get('http://localhost:3000/api/reports?type=pdf');
             if (res.data.status === 'success' && res.data.data.type === 'application/pdf') {
-                // Create a fake blob for the mock PDF
-                const blob = new Blob([res.data.data.content], { type: 'application/pdf' });
+                // Decode base64 string
+                const byteCharacters = atob(res.data.data.content);
+                const byteNumbers = new Array(byteCharacters.length);
+                for (let i = 0; i < byteCharacters.length; i++) {
+                    byteNumbers[i] = byteCharacters.charCodeAt(i);
+                }
+                const byteArray = new Uint8Array(byteNumbers);
+                const blob = new Blob([byteArray], { type: 'application/pdf' });
+
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
@@ -37,7 +44,7 @@ const ReportsPage = () => {
             }
         } catch (err) {
             console.error("PDF Download failed", err);
-            alert("Failed to download PDF");
+            alert("Failed to download PDF: " + err.message);
         }
     };
 

@@ -3,6 +3,7 @@ const { IAMClient, ListRolesCommand, ListAttachedRolePoliciesCommand } = require
 class IAMScanner {
     constructor(region, credentials) {
         this.region = region;
+        this.name = 'IAMScanner';
         const config = { region };
         if (credentials) {
             config.credentials = {

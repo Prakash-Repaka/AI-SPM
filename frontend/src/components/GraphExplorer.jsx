@@ -30,10 +30,40 @@ const GraphExplorer = () => {
                 </div>
                 <ForceGraph2D
                     graphData={graphData}
-                    nodeLabel="label"
-                    nodeColor={node => node.group === 0 ? '#ef4444' : node.group === 1 ? '#3b82f6' : '#22c55e'}
-                    linkColor={() => '#475569'}
+                    nodeLabel="name"
+                    nodeCanvasObject={(node, ctx, globalScale) => {
+                        const label = node.name || node.id;
+                        const fontSize = 12 / globalScale;
+                        ctx.font = `${fontSize}px Sans-Serif`;
+                        const textWidth = ctx.measureText(label).width;
+                        const bckgDimensions = [textWidth, fontSize].map(n => n + fontSize * 0.2); // some padding
+
+                        // Node Color Logic
+                        let color = '#64748b'; // Default Slate
+                        if (node.type === 'SageMakerEndpoint' || node.label === 'SageMakerEndpoint') color = '#8b5cf6'; // Violet
+                        else if (node.type === 'S3Bucket' || node.label === 'S3Bucket') color = '#10b981'; // Emerald
+                        else if (node.type === 'IAMRole' || node.type === 'Privilege' || node.label === 'IAMRole') color = '#f43f5e'; // Rose
+                        else if (node.id === 'INTERNET' || node.label === 'Network') color = '#3b82f6'; // Blue
+
+                        // Draw Circle
+                        ctx.beginPath();
+                        ctx.fillStyle = color;
+                        ctx.arc(node.x, node.y, 5, 0, 2 * Math.PI, false);
+                        ctx.fill();
+
+                        // Draw Label
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillStyle = '#cbd5e1';
+                        ctx.fillText(label, node.x, node.y + 8);
+                    }}
+                    linkDirectionalArrowLength={3.5}
+                    linkDirectionalArrowRelPos={1}
                     backgroundColor="#0f172a"
+                    onNodeClick={node => {
+                        // Focus on node logic could go here
+                        console.log('Clicked', node);
+                    }}
                 />
             </div>
             <div className="w-80 bg-white border-l border-gray-200 p-6 overflow-y-auto">

@@ -1,5 +1,6 @@
 const config = require('../config');
-const { SageMakerScanner } = require('./scanners/sagemaker');
+const { SageMakerScanner } = require('./scanners/sagemakerScanner');
+const { BedrockScanner } = require('./scanners/bedrockScanner');
 const { S3Scanner } = require('./scanners/s3');
 const { IAMScanner } = require('./scanners/iam');
 const db = require('../database/neo4j');
@@ -11,6 +12,7 @@ class AWSScanner {
         this.credentials = credentials;
         this.scanners = [
             new SageMakerScanner(region, credentials),
+            new BedrockScanner(region, credentials),
             new S3Scanner(region, credentials),
             new IAMScanner(region, credentials)
         ];
@@ -23,7 +25,7 @@ class AWSScanner {
         console.log(`Starting scan in region: ${this.region}`);
 
         for (const scanner of this.scanners) {
-            const scannerName = scanner.constructor.name;
+            const scannerName = scanner.name || scanner.constructor.name;
             console.log(`Running scanner: ${scannerName}`);
             try {
                 let assets = await scanner.scan();
@@ -32,6 +34,7 @@ class AWSScanner {
                 if (!assets || assets.length === 0) {
                     console.log(`⚠️ No assets found for ${scannerName}. generating Mock Data.`);
                     assets = this.generateMockAssets(scannerName);
+                    console.log(`[DEBUG] Generated ${assets.length} mock assets for ${scannerName}`);
                 }
 
                 results[scannerName] = assets;
@@ -40,6 +43,7 @@ class AWSScanner {
             } catch (error) {
                 console.error(`❌ ${scannerName} Failed:`, error.message);
                 // Fallback to mock on error
+                console.log(`[DEBUG] Error caught, generating mocks for ${scannerName}`);
                 const mockAssets = this.generateMockAssets(scannerName);
                 results[scannerName] = mockAssets;
                 allAssets.push(...mockAssets);
@@ -62,9 +66,11 @@ class AWSScanner {
         }
 
         return {
+            data: results,
             assets: analysis.analyzedAssets,
             findings: analysis.findings,
-            stats: analysis.stats
+            stats: analysis.stats,
+            threats: analysis.threats
         };
     }
 
@@ -180,6 +186,26 @@ class AWSScanner {
                     policies: ['AdministratorAccess'],
                     isOverPrivileged: true,
                     tags: { Deprecated: 'True' }
+                }
+            ];
+        }
+        else if (scannerName === 'BedrockScanner') {
+            return [
+                {
+                    id: `arn:aws:bedrock:${this.region}:123456789012:settings`,
+                    arn: `arn:aws:bedrock:${this.region}:123456789012:settings`,
+                    name: 'Bedrock-Regional-Settings',
+                    type: 'BedrockService',
+                    region: this.region,
+                    status: 'Active',
+                    findings: [{
+                        id: 'BEDROCK-001',
+                        ruleId: 'BEDROCK-001',
+                        severity: 'HIGH',
+                        title: 'Model Invocation Logging Disabled',
+                        description: 'Bedrock model invocation logging is disabled (Mock Finding).'
+                    }],
+                    tags: {}
                 }
             ];
         }

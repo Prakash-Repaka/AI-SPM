@@ -30,6 +30,9 @@ const RULES = [
     }
 ];
 
+
+const threatEngine = require('./threatEngine');
+
 class RiskEngine {
     constructor() { }
 
@@ -39,25 +42,36 @@ class RiskEngine {
         for (const asset of assets) {
             let assetRiskScore = 0;
 
+            // 1. Collect findings already reported by Scanners (e.g., Bedrock, SageMaker)
+            if (asset.findings && asset.findings.length > 0) {
+                findings.push(...asset.findings);
+            }
+
+            // 2. Run Centralized Risk Rules
             for (const rule of RULES) {
                 if (rule.check(asset)) {
-                    // Create Finding
-                    const finding = {
-                        id: `${rule.id}-${asset.id.slice(-8)}`,
-                        ruleId: rule.id,
-                        assetId: asset.id,
-                        assetName: asset.name,
-                        severity: rule.severity,
-                        description: rule.description,
-                        score: rule.riskScore,
-                        remediation: rule.remediation,
-                        timestamp: new Date().toISOString()
-                    };
-                    findings.push(finding);
+                    // Avoid duplicates if scanner already found it
+                    const alreadyFound = asset.findings && asset.findings.some(f => f.ruleId === rule.id);
 
-                    // Simple max score aggregation for the asset
-                    if (rule.riskScore > assetRiskScore) {
-                        assetRiskScore = rule.riskScore;
+                    if (!alreadyFound) {
+                        // Create Finding
+                        const finding = {
+                            id: `${rule.id}-${asset.id.slice(-8)}`,
+                            ruleId: rule.id,
+                            assetId: asset.id,
+                            assetName: asset.name,
+                            severity: rule.severity,
+                            description: rule.description,
+                            score: rule.riskScore,
+                            remediation: rule.remediation,
+                            timestamp: new Date().toISOString()
+                        };
+                        findings.push(finding);
+
+                        // Simple max score aggregation for the asset
+                        if (rule.riskScore > assetRiskScore) {
+                            assetRiskScore = rule.riskScore;
+                        }
                     }
                 }
             }
@@ -67,10 +81,15 @@ class RiskEngine {
             asset.findingsCount = findings.filter(f => f.assetId === asset.id).length;
         }
 
+        // --- NEW: STRIDE ANALYSIS ---
+        // Pass all findings through the ThreatEngine
+        const threatAnalysis = threatEngine.analyze(findings);
+
         return {
             analyzedAssets: assets,
-            findings: findings,
-            stats: this.calculateStats(findings, assets)
+            findings: threatAnalysis.findings, // Now enriched with STRIDE
+            stats: this.calculateStats(findings, assets),
+            threats: threatAnalysis.matrix // STRIDE Heatmap data
         };
     }
 

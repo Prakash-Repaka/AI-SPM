@@ -1,50 +1,72 @@
 class ComplianceEngine {
     constructor() {
-        // NIST AI RMF 1.0 Controls Mapping
         this.frameworks = {
-            'NIST_AI_RMF': {
+            'OWASP-LLM': {
+                name: 'OWASP Top 10 for LLM',
+                mappings: {
+                    'SM-001': 'LLM08: Excessive Agency',
+                    'SM-002': 'LLM08: Excessive Agency',
+                    'SM-003': 'LLM06: Sensitive Information Disclosure',
+                    'IAM-001': 'LLM08: Excessive Agency',
+                    'S3-001': 'LLM06: Sensitive Information Disclosure',
+                    'BEDROCK-001': 'LLM09: Overreliance'
+                }
+            },
+            'NIST-AI-RMF': {
                 name: 'NIST AI Risk Management Framework',
-                controls: {
-                    'GOVERN-1.1': { description: 'Policies and processes are in place', relatedRules: ['IAM-001', 'IAM-002'] },
-                    'MAP-1.2': { description: 'AI system context is understood', relatedRules: ['SM-001'] }, // Public endpoints break this
-                    'MANAGE-2.3': { description: 'Data protection strategies implemented', relatedRules: ['S3-001'] }, // Unencrypted data
-                    'MANAGE-4.1': { description: 'Post-deployment monitoring', relatedRules: ['SM-002'] }
+                mappings: {
+                    'SM-001': 'Protect 2.3: System Safety',
+                    'SM-003': 'Protect 2.4: Data Security',
+                    'S3-001': 'Protect 2.4: Data Security',
+                    'BEDROCK-001': 'Measure 2.6: System Monitoring'
                 }
             }
         };
     }
 
-    assess(findings) {
-        const complianceReport = {
-            framework: 'NIST AI RMF',
-            score: 100,
-            controls: []
+    mapFindings(findings) {
+        return findings.map(f => {
+            const compliance = {};
+
+            // For each framework, check if this ruleId is mapped
+            Object.keys(this.frameworks).forEach(fwKey => {
+                const framework = this.frameworks[fwKey];
+                const requirement = framework.mappings[f.ruleId];
+                if (requirement) {
+                    compliance[fwKey] = requirement;
+                }
+            });
+
+            return { ...f, compliance };
+        });
+    }
+
+    getComplianceReport(findings) {
+        const report = {
+            summary: { 'OWASP-LLM': 0, 'NIST-AI-RMF': 0 },
+            details: {}
         };
 
-        const activeFindings = new Set(findings.map(f => f.ruleId));
-        let failedControls = 0;
-        let totalControls = Object.keys(this.frameworks.NIST_AI_RMF.controls).length;
+        const mapped = this.mapFindings(findings);
 
-        for (const [controlId, data] of Object.entries(this.frameworks.NIST_AI_RMF.controls)) {
-            // Check if any related rule failed
-            const failedRules = data.relatedRules.filter(ruleId => activeFindings.has(ruleId));
-            const status = failedRules.length > 0 ? 'FAIL' : 'PASS';
+        mapped.forEach(f => {
+            if (f.compliance) {
+                Object.keys(f.compliance).forEach(fw => {
+                    const req = f.compliance[fw];
+                    report.summary[fw] = (report.summary[fw] || 0) + 1;
 
-            if (status === 'FAIL') failedControls++;
+                    if (!report.details[fw]) report.details[fw] = [];
+                    report.details[fw].push({
+                        ruleId: f.ruleId,
+                        requirement: req,
+                        assetId: f.id,
+                        severity: f.severity
+                    });
+                });
+            }
+        });
 
-            complianceReport.controls.push({
-                id: controlId,
-                description: data.description,
-                status: status,
-                impact: status === 'FAIL' ? 'High' : 'None',
-                failedRules: failedRules
-            });
-        }
-
-        // Calculate simple percentage score
-        complianceReport.score = Math.round(((totalControls - failedControls) / totalControls) * 100);
-
-        return complianceReport;
+        return report;
     }
 }
 
