@@ -19,8 +19,11 @@ app.get('/health', (req, res) => {
 });
 
 // Routes
+// Routes
 const redTeamRoutes = require('./src/routes/redTeam');
+const authRoutes = require('./src/routes/auth'); // New Auth
 app.use('/api/red-team', redTeamRoutes);
+app.use('/api/auth', authRoutes); // Mount Auth
 
 // Mock Data Routes (Keep existing ones)
 // Scan Routes
