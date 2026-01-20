@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Shield, Lock, Eye, EyeOff } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import config from '../config';
 
 const LoginPage = () => {
     const navigate = useNavigate();
@@ -15,7 +16,7 @@ const LoginPage = () => {
         setError('');
 
         try {
-            const response = await fetch('http://localhost:3000/api/auth/login', {
+            const response = await fetch(`${config.API_BASE_URL}/auth/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(credentials)

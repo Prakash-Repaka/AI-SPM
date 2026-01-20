@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Shield, User, Mail, Lock } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import config from '../config';
 
 const SignupPage = () => {
     const navigate = useNavigate();
@@ -14,7 +15,7 @@ const SignupPage = () => {
         setError('');
 
         try {
-            const response = await fetch('http://localhost:3000/api/auth/register', {
+            const response = await fetch(`${config.API_BASE_URL}/auth/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)
