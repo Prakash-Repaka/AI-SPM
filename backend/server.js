@@ -11,7 +11,7 @@ const corsOptions = {
         const allowedOrigins = [
             'http://localhost:5173',
             'http://localhost:3000',
-            'https://aegis-ai-spm.vercel.app'
+            'https://ai-spm.vercel.app'
         ];
 
         // Allow requests with no origin (like direct browser access)
