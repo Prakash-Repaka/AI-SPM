@@ -106,9 +106,13 @@ class ReportEngine {
                 doc.font('Courier').text('-----------------------------------------');
                 doc.text('| Severity   | Count | Impact              |');
                 doc.text('-----------------------------------------');
-                doc.text(`| CRITICAL   | ${String(reportData.summary.criticalCount).padEnd(5)} | Immediate Action    |`);
-                doc.text(`| HIGH       | ${String(reportData.summary.highCount).padEnd(5)} | High Priority       |`);
-                doc.text(`| MEDIUM     | ${String(reportData.summary.totalRisks - reportData.summary.criticalCount - reportData.summary.highCount).padEnd(5)} | Scheduled Remediation|`);
+                const criticalCount = reportData.summary.criticalCount || 0;
+                const highCount = reportData.summary.highCount || 0;
+                const totalRisks = reportData.summary.totalRisks || 0;
+                const mediumCount = totalRisks - criticalCount - highCount;
+                doc.text(`| CRITICAL   | ${String(criticalCount).padEnd(5)} | Immediate Action    |`);
+                doc.text(`| HIGH       | ${String(highCount).padEnd(5)} | High Priority       |`);
+                doc.text(`| MEDIUM     | ${String(mediumCount).padEnd(5)} | Scheduled Remediation|`);
                 doc.text('-----------------------------------------');
                 doc.font('Helvetica');
                 doc.moveDown();

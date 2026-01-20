@@ -115,11 +115,19 @@ app.get('/api/risks/paths', async (req, res) => {
 const reportEngine = require('./src/analysis/reportEngine');
 app.get('/api/reports', async (req, res) => {
     try {
+        console.log('Report generation requested, type:', req.query.type || 'json');
         const type = req.query.type || 'json';
         const report = await reportEngine.generateReport(type);
+        console.log('Report generated successfully');
         res.json({ status: 'success', data: report });
     } catch (error) {
-        res.status(500).json({ status: 'error', message: error.message });
+        console.error('Report generation error:', error);
+        console.error('Error stack:', error.stack);
+        res.status(500).json({
+            status: 'error',
+            message: error.message,
+            details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        });
     }
 });
 
