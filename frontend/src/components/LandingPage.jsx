@@ -1,6 +1,7 @@
 import React from 'react';
 import { Shield, Zap, Eye, Lock, ArrowRight, CheckCircle, Server, Globe } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import dashboardMockup from '../assets/dashboard_mockup.png';
 
 const LandingPage = () => {
     return (
@@ -49,9 +50,12 @@ const LandingPage = () => {
                         <Link to="/signup" className="px-8 py-4 rounded-xl bg-white text-indigo-900 font-bold text-lg hover:bg-slate-100 transition-all transform hover:scale-105 shadow-xl">
                             Start Protecting Now
                         </Link>
-                        <Link to="#features" className="px-8 py-4 rounded-xl bg-slate-800 text-white font-bold text-lg border border-slate-700 hover:bg-slate-700 transition-all">
+                        <button
+                            onClick={() => document.getElementById('features').scrollIntoView({ behavior: 'smooth' })}
+                            className="px-8 py-4 rounded-xl bg-slate-800 text-white font-bold text-lg border border-slate-700 hover:bg-slate-700 transition-all cursor-pointer"
+                        >
                             How It Works
-                        </Link>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -141,26 +145,11 @@ const LandingPage = () => {
                         </div>
                         <div className="relative">
                             <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-500 blur-3xl opacity-20 rounded-full"></div>
-                            <div className="relative bg-slate-800 border border-slate-700 rounded-2xl p-6 shadow-2xl">
-                                {/* Abstract UI Mockup */}
-                                <div className="flex items-center space-x-2 mb-6 border-b border-slate-700 pb-4">
-                                    <div className="h-3 w-3 rounded-full bg-red-500"></div>
-                                    <div className="h-3 w-3 rounded-full bg-yellow-500"></div>
-                                    <div className="h-3 w-3 rounded-full bg-green-500"></div>
-                                    <div className="ml-4 h-2 w-32 bg-slate-600 rounded-full opacity-50"></div>
-                                </div>
-                                <div className="space-y-4">
-                                    <div className="flex space-x-4">
-                                        <div className="w-1/3 h-24 bg-slate-700 rounded-lg animate-pulse"></div>
-                                        <div className="w-2/3 h-24 bg-slate-700 rounded-lg animate-pulse"></div>
-                                    </div>
-                                    <div className="h-40 bg-slate-700/50 rounded-lg border border-slate-600/50 p-4">
-                                        <div className="h-4 w-3/4 bg-slate-600 rounded mb-3"></div>
-                                        <div className="h-4 w-1/2 bg-slate-600 rounded mb-3"></div>
-                                        <div className="h-4 w-5/6 bg-slate-600 rounded"></div>
-                                    </div>
-                                </div>
-                            </div>
+                            <img
+                                src={dashboardMockup}
+                                alt="Dashboard Preview"
+                                className="relative rounded-2xl shadow-2xl border border-slate-700 w-full h-auto transform hover:scale-105 transition-transform duration-500"
+                            />
                         </div>
                     </div>
                 </div>

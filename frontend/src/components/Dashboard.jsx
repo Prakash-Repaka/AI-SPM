@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Shield, Server, AlertTriangle, Activity, Play, CircleDollarSign } from 'lucide-react';
 import axios from 'axios';
 
 const Dashboard = ({ setActiveTab }) => {
+    const navigate = useNavigate();
     const [stats, setStats] = useState({
         assets: 0,
         risks: 0,
@@ -191,7 +193,7 @@ const Dashboard = ({ setActiveTab }) => {
                     icon={Server}
                     color="text-blue-600"
                     subtext="+3 new assets"
-                    onClick={() => setActiveTab('inventory')}
+                    onClick={() => navigate('/inventory')}
                 />
                 <StatCard
                     title="Critical Risks"
@@ -199,7 +201,7 @@ const Dashboard = ({ setActiveTab }) => {
                     icon={AlertTriangle}
                     color="text-red-600"
                     subtext="Requires attention"
-                    onClick={() => setActiveTab('risks')}
+                    onClick={() => navigate('/risks')}
                 />
                 <StatCard
                     title="Projected Loss"
@@ -207,7 +209,7 @@ const Dashboard = ({ setActiveTab }) => {
                     icon={CircleDollarSign}
                     color="text-orange-600"
                     subtext="Financial Risk Exposure"
-                    onClick={() => setActiveTab('risks')}
+                    onClick={() => navigate('/risks')}
                 />
                 <StatCard
                     title="Security Score"
@@ -215,7 +217,7 @@ const Dashboard = ({ setActiveTab }) => {
                     icon={Shield}
                     color="text-green-600"
                     subtext="Top 10%"
-                    onClick={() => setActiveTab('reports')}
+                    onClick={() => navigate('/reports')}
                 />
                 <StatCard
                     title="Compliance"
@@ -223,7 +225,7 @@ const Dashboard = ({ setActiveTab }) => {
                     icon={Activity}
                     color="text-purple-600"
                     subtext="NIST AI RMF"
-                    onClick={() => setActiveTab('reports')}
+                    onClick={() => navigate('/reports')}
                 />
             </div>
 
