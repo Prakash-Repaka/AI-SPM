@@ -18,6 +18,11 @@ app.get('/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// Routes
+const redTeamRoutes = require('./src/routes/redTeam');
+app.use('/api/red-team', redTeamRoutes);
+
+// Mock Data Routes (Keep existing ones)
 // Scan Routes
 const { AWSScanner } = require('./src/discovery/awsScanner');
 
@@ -128,6 +133,55 @@ app.post('/api/remediate', (req, res) => {
         res.status(500).json({ status: 'error', message: error.message });
     }
 });
+
+// ... existing imports ...
+const multer = require('multer');
+const fs = require('fs');
+const path = require('path');
+const logParser = require('./src/discovery/logParser');
+
+// Configure Multer for temp uploads
+const upload = multer({ dest: 'uploads/' });
+
+// Ensure uploads dir exists
+if (!fs.existsSync('uploads')) {
+    fs.mkdirSync('uploads');
+}
+
+// ... existing routes ...
+
+// Shadow AI Routes
+app.post('/api/shadow-ai/upload-logs', upload.single('logfile'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ status: 'error', message: 'No file uploaded' });
+        }
+
+        const filePath = req.file.path;
+        const fileType = req.file.mimetype === 'application/json' || req.file.originalname.endsWith('.json') ? 'json' : 'csv';
+
+        console.log(`Processing log file: ${req.file.originalname} (${fileType})`);
+
+        const findings = await logParser.parseLogFile(filePath, fileType);
+
+        // Cleanup temp file
+        fs.unlinkSync(filePath);
+
+        // Calculate stats
+        const stats = {
+            sanctioned: findings.filter(f => f.status === 'Sanctioned').length,
+            unsanctioned: findings.filter(f => f.status === 'Unsanctioned').length,
+            risky: findings.filter(f => f.risk === 'HIGH').length
+        };
+
+        res.json({ status: 'success', data: { findings, stats } });
+
+    } catch (error) {
+        console.error("Log Parsing Error:", error);
+        res.status(500).json({ status: 'error', message: 'Failed to parse logs' });
+    }
+});
+
 
 // Start Server
 app.listen(PORT, () => {

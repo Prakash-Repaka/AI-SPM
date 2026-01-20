@@ -1,0 +1,7 @@
+timestamp,source_ip,destination,bytes,app
+2024-05-20T10:00:00Z,10.0.1.5,api.openai.com,45000,ChatGPT
+2024-05-20T10:05:23Z,10.0.2.22,claude.ai,125000,Claude
+2024-05-20T10:15:00Z,192.168.1.10,gemini.google.com,8500,Gemini
+2024-05-20T10:20:11Z,10.0.1.5,huggingface.co,560000,HuggingFace
+2024-05-20T11:00:00Z,10.0.3.33,api.openai.com,12000,ChatGPT
+2024-05-20T11:05:00Z,10.0.3.33,midjourney.com,890000,Midjourney

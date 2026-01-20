@@ -154,8 +154,11 @@ const FindingsPage = () => {
                                 {selectedRemediation.actions && selectedRemediation.actions.map((action, idx) => (
                                     <div key={idx} className="space-y-2">
                                         <div className="flex justify-between items-end">
-                                            <span className="text-green-400 text-xs font-mono font-bold uppercase tracking-wider">
-                                                {action.type}
+                                            <span className="text-green-400 text-xs font-mono font-bold uppercase tracking-wider flex items-center">
+                                                {action.language === 'python' ? <Terminal size={14} className="mr-1" /> :
+                                                    action.language === 'hcl' ? <Server size={14} className="mr-1" /> :
+                                                        <Terminal size={14} className="mr-1" />}
+                                                {action.label}
                                             </span>
                                             <button
                                                 onClick={() => navigator.clipboard.writeText(action.code)}
