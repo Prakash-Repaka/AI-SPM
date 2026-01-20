@@ -7,12 +7,23 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware - CORS Configuration
 const corsOptions = {
-    origin: [
-        'http://localhost:5173',
-        'http://localhost:3000',
-        'https://aegis-ai-spm.vercel.app',
-        'https://*.vercel.app' // Allow all Vercel preview deployments
-    ],
+    origin: function (origin, callback) {
+        const allowedOrigins = [
+            'http://localhost:5173',
+            'http://localhost:3000',
+            'https://aegis-ai-spm.vercel.app'
+        ];
+
+        // Allow requests with no origin (like direct browser access)
+        if (!origin) return callback(null, true);
+
+        // Check if origin matches allowed origins or ends with .vercel.app
+        if (allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     credentials: true,
     optionsSuccessStatus: 200
 };
