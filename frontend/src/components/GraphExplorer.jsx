@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import ForceGraph2D from 'react-force-graph-2d';
+import config from '../config';
 
 const GraphExplorer = () => {
     const [graphData, setGraphData] = useState({ nodes: [], links: [] });
@@ -9,10 +10,10 @@ const GraphExplorer = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const gRes = await axios.get('http://localhost:3000/api/graph');
+                const gRes = await axios.get(`${config.API_BASE_URL}/graph`);
                 if (gRes.data.data) setGraphData(gRes.data.data);
 
-                const pRes = await axios.get('http://localhost:3000/api/risks/paths');
+                const pRes = await axios.get(`${config.API_BASE_URL}/risks/paths`);
                 if (pRes.data.data) setPaths(pRes.data.data);
             } catch (err) {
                 console.error(err);

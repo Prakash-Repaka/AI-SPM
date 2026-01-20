@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Shield, Server, AlertTriangle, Activity, Play, CircleDollarSign } from 'lucide-react';
 import axios from 'axios';
+import config from '../config';
 
 const Dashboard = ({ setActiveTab }) => {
     const navigate = useNavigate();
@@ -29,7 +30,7 @@ const Dashboard = ({ setActiveTab }) => {
 
     const checkBackend = async () => {
         try {
-            const res = await axios.get('http://localhost:3000/health');
+            const res = await axios.get(`${config.API_BASE_URL.replace('/api', '')}/health`);
             setBackendStatus(res.data.status === 'ok' ? 'Connected' : 'Error');
         } catch (err) {
             setBackendStatus('Disconnected');
@@ -51,7 +52,7 @@ const Dashboard = ({ setActiveTab }) => {
 
         try {
             // Send config (empty means demo mode)
-            const res = await axios.post('http://localhost:3000/api/scan', {
+            const res = await axios.post(`${config.API_BASE_URL}/scan`, {
                 config: awsConfig
             });
 

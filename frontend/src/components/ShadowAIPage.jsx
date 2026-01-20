@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Eye, Shield, Globe, Server, AlertOctagon, Activity, Upload, FileText, CheckCircle } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from 'recharts';
 import axios from 'axios';
+import config from '../config';
 
 const ShadowAIPage = () => {
     const [logs, setLogs] = useState([]);
@@ -31,7 +32,7 @@ const ShadowAIPage = () => {
         setUploadStatus(null);
 
         try {
-            const res = await axios.post('http://localhost:3000/api/shadow-ai/upload-logs', formData, {
+            const res = await axios.post(`${config.API_BASE_URL}/shadow-ai/upload-logs`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
 
