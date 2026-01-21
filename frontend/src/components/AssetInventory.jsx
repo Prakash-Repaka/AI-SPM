@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { AlertCircle, CheckCircle, Search } from 'lucide-react';
+import config from '../config';
 
 const AssetInventory = () => {
     const [assets, setAssets] = useState([]);
@@ -9,7 +10,7 @@ const AssetInventory = () => {
     useEffect(() => {
         const fetchAssets = async () => {
             try {
-                const res = await axios.get('http://localhost:3000/api/assets');
+                const res = await axios.get(`${config.API_BASE_URL}/assets`);
                 if (res.data.data && res.data.data.length > 0) {
                     setAssets(res.data.data);
                 } else {

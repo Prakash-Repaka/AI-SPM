@@ -5,8 +5,29 @@ const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
-app.use(cors());
+// Middleware - CORS Configuration
+const corsOptions = {
+    origin: function (origin, callback) {
+        const allowedOrigins = [
+            'http://localhost:5173',
+            'http://localhost:3000',
+            'https://ai-spm.vercel.app'
+        ];
+
+        // Allow requests with no origin (like direct browser access)
+        if (!origin) return callback(null, true);
+
+        // Check if origin matches allowed origins or ends with .vercel.app
+        if (allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true,
+    optionsSuccessStatus: 200
+};
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // Routes
@@ -115,11 +136,19 @@ app.get('/api/risks/paths', async (req, res) => {
 const reportEngine = require('./src/analysis/reportEngine');
 app.get('/api/reports', async (req, res) => {
     try {
+        console.log('Report generation requested, type:', req.query.type || 'json');
         const type = req.query.type || 'json';
         const report = await reportEngine.generateReport(type);
+        console.log('Report generated successfully');
         res.json({ status: 'success', data: report });
     } catch (error) {
-        res.status(500).json({ status: 'error', message: error.message });
+        console.error('Report generation error:', error);
+        console.error('Error stack:', error.stack);
+        res.status(500).json({
+            status: 'error',
+            message: error.message,
+            details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        });
     }
 });
 

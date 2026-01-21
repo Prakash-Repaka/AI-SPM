@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Shield, Users, FileText, Search, LogOut, Check, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import config from '../config';
 
 const AdminDashboard = () => {
     const navigate = useNavigate();
@@ -14,7 +15,7 @@ const AdminDashboard = () => {
 
     const fetchUsers = async () => {
         try {
-            const response = await fetch('http://localhost:3000/api/auth/users');
+            const response = await fetch(`${config.API_BASE_URL}/auth/users`);
             const data = await response.json();
             if (data.status === 'success') {
                 setUsers(data.data);

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { AlertTriangle, CheckCircle, Terminal, X, Copy } from 'lucide-react';
+import config from '../config';
 
 const FindingsPage = () => {
     const [findings, setFindings] = useState([]);
@@ -9,7 +10,7 @@ const FindingsPage = () => {
 
     const fetchFindings = async () => {
         try {
-            const res = await axios.post('http://localhost:3000/api/scan');
+            const res = await axios.post(`${config.API_BASE_URL}/scan`);
             if (res.data.data && res.data.data.findings) {
                 setFindings(res.data.data.findings);
             }
@@ -29,7 +30,7 @@ const FindingsPage = () => {
     const handleFix = async (finding) => {
         try {
             // Updated Endpoint for V2 Remediation Engine
-            const res = await axios.post('http://localhost:3000/api/remediate', { finding });
+            const res = await axios.post(`${config.API_BASE_URL}/remediate`, { finding });
 
             if (res.data.data && res.data.data.available) {
                 setSelectedRemediation(res.data.data); // Save full object (title, risk, actions[])

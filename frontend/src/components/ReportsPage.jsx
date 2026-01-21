@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { FileText, Download } from 'lucide-react';
+import config from '../config';
 
 const ReportsPage = () => {
     const [generating, setGenerating] = useState(false);
@@ -9,7 +10,7 @@ const ReportsPage = () => {
     const generateReport = async () => {
         setGenerating(true);
         try {
-            const res = await axios.get('http://localhost:3000/api/reports');
+            const res = await axios.get(`${config.API_BASE_URL}/reports`);
             setLastReport(res.data.data);
         } catch (err) {
             console.error(err);
@@ -22,7 +23,7 @@ const ReportsPage = () => {
         if (!lastReport) return;
         try {
             // Request PDF type
-            const res = await axios.get('http://localhost:3000/api/reports?type=pdf');
+            const res = await axios.get(`${config.API_BASE_URL}/reports?type=pdf`);
             if (res.data.status === 'success' && res.data.data.type === 'application/pdf') {
                 // Decode base64 string
                 const byteCharacters = atob(res.data.data.content);
