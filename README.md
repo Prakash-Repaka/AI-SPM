@@ -87,10 +87,6 @@ A modern, dark-themed UI providing a real-time view of:
   - `/src/routes`: API route definitions.
   - `/src/models`: Database schemas.
 
-## 🤝 Contribution
 
-Contributions are welcome! Please fork the repository and create a pull request.
 
-## 📄 License
 
-This project is licensed under the MIT License.
